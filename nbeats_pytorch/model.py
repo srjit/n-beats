@@ -47,7 +47,8 @@ class NBeatsNet(nn.Module):
                 block = blocks[-1]  # pick up the last one when we share weights.
             else:
                 block = block_init(self.hidden_layer_units, self.thetas_dim[stack_id],
-                                   self.device, self.backcast_length, self.forecast_length, self.nb_harmonics)
+                              self.device, self.backcast_length, self.forecast_length, self.nb_harmonics)
+
                 self.parameters.extend(block.parameters())
             print(f'     | -- {block}')
             blocks.append(block)
@@ -62,10 +63,12 @@ class NBeatsNet(nn.Module):
         else:
             return GenericBlock
 
+
     def forward(self, backcast):
         forecast = torch.zeros(size=(backcast.size()[0], self.forecast_length,))  # maybe batch size here.
         for stack_id in range(len(self.stacks)):
             for block_id in range(len(self.stacks[stack_id])):
+
                 b, f = self.stacks[stack_id][block_id](backcast)
                 backcast = backcast.to(self.device) - b
                 forecast = forecast.to(self.device) + f
@@ -98,8 +101,7 @@ def linspace(backcast_length, forecast_length):
 
 class Block(nn.Module):
 
-    def __init__(self, units, thetas_dim, device, backcast_length=10, forecast_length=5, share_thetas=False,
-                 nb_harmonics=None):
+    def __init__(self, units, thetas_dim, device, backcast_length=10, forecast_length=5, share_thetas=False):
         super(Block, self).__init__()
         self.units = units
         self.thetas_dim = thetas_dim
